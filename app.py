@@ -34,7 +34,7 @@ AUDIO_DIR = "audio"
 st.set_page_config(page_title="🧘‍♀️ meditation mood maker", page_icon=":musical_note:")
 st.title("🧘‍♀️ meditation mood maker")
 
-st.write("this app generates meditative soundscapes based on your mood. it retrieves from a collection of ambient sounds and allows you to create a custom mix. if you like any sounds, you can download them and put them in your own playlists for you to enjoy during mindfulness sessions.")
+st.write("this app generates meditative soundscapes based on your mood. it retrieves from a collection of ambient sounds and allows you to create a custom mix. if you like any sounds, you can download them and put them in your own playlists for you to use during meditation.")
 st.write("this was inspired by Inez Insuelo's lecture on using sound vibrations for meditation.")
 
 mood = st.text_input(
@@ -60,6 +60,10 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
 
     while len(sample_idx) > 0:
         idx = sample_idx.pop(0)
+
+    # with yt_dlp.YoutubeDL({'outtmpl': AUDIO_DIR + '/%(id)s.%(ext)s', **YDL_OPTS }) as ydl:
+    #     ydl.download([f"https://www.youtube.com/watch?v={yt_ids[idx]}" for idx in sample_idx])
+    # final_audios.extend([{"path": f"{AUDIO_DIR}/{yt_ids[idx]}.wav", "caption": captions[idx], "title": metadatas[idx]["title"]} for idx in sample_idx])
 
         if f"{yt_ids[idx]}.wav" not in existing_files:
             directory = st.session_state.dir
