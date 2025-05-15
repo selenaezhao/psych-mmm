@@ -1,10 +1,9 @@
 streamlit
+streamlit-chromadb-connection
 pydub
 yt-dlp
 numpy
 scipy
-chromadb
 tqdm
 pandas
 ffmpeg-python
-protobuf==4.25.7

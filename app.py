@@ -1,4 +1,3 @@
-import chromadb
 import yt_dlp
 from yt_dlp.utils import download_range_func
 from pydub import AudioSegment
@@ -7,6 +6,8 @@ import tempfile
 import numpy as np
 import os
 import streamlit as st
+from streamlit_chromadb_connection.chromadb_connection import ChromadbConnection
+
 
 YDL_OPTS = {
     'format': 'bestaudio/best',
@@ -20,12 +21,18 @@ YDL_OPTS = {
     "force_keyframes_at_cuts": True,
 }
 
+configuration = {
+    "client": "PersistentClient",
+    "path": "audio/chroma_db",
+}
+
+collection_name = "audio-collection"
+
 AUDIO_DIR = "audio"
 
 def fetch_audio_from_text(prompt, filename="output.wav"):
-    chroma_client = chromadb.PersistentClient(path=os.path.join(AUDIO_DIR, "chroma_db"))
-    collection = chroma_client.get_collection(name="audio-collection")
-    results = collection.query(query_texts=[prompt], n_results=20)
+    conn = st.connection("chromadb", type=ChromadbConnection, **configuration)
+    results = conn.query(collection_name=collection_name, query=prompt, num_results_limit=20)
 
     yt_ids = results["ids"][0]
     captions = results["documents"][0]
