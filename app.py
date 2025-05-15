@@ -6,6 +6,9 @@ import tempfile
 import numpy as np
 import os
 import streamlit as st
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from streamlit_chromadb_connection.chromadb_connection import ChromadbConnection
 
 

@@ -7,3 +7,4 @@ scipy
 tqdm
 pandas
 ffmpeg-python
+pysqlite3-binary
