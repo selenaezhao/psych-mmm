@@ -3,5 +3,6 @@ pydub
 yt-dlp
 numpy
 scipy
-chromadb==1.0.9
+chromadb
 tqdm
+protobuf==3.20.3
