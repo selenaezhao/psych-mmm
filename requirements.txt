@@ -5,4 +5,4 @@ numpy
 scipy
 chromadb
 tqdm
-protobuf>=3.19.0
+protobuf==5.29.4
