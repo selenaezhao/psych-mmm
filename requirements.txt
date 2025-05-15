@@ -1,0 +1,7 @@
+streamlit
+pydub
+yt-dlp
+numpy
+scipy
+chromadb
+tqdm
