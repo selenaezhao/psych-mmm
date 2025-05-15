@@ -3,5 +3,5 @@ pydub
 yt-dlp
 numpy
 scipy
-chromadb
+chromadb==1.0.9
 tqdm
