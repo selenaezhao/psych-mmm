@@ -83,7 +83,7 @@ mood = st.text_input(
 
 if "sounds" not in st.session_state:
     st.session_state.sounds = []
-    st.session_state.dir = tempfile.mkdtemp()\
+    st.session_state.dir = tempfile.mkdtemp()
     print("temp dir", st.session_state.dir)
 
 if st.button("generate soundscapes"):
