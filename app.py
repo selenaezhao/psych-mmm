@@ -45,31 +45,27 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
     final_audios = []
 
     existing_files = os.listdir(AUDIO_DIR) + os.listdir(st.session_state.dir)
-    print(existing_files)
 
     while len(sample_idx) > 0:
-        idx = sample_idx[0]
+        idx = sample_idx.pop(0)
 
         if f"{yt_ids[idx]}.wav" not in existing_files:
             directory = st.session_state.dir
             url = f"https://www.youtube.com/watch?v={yt_ids[idx]}"
             with yt_dlp.YoutubeDL({'outtmpl': str(directory) + '/%(id)s.%(ext)s', **YDL_OPTS }) as ydl:
                 try:
-                    if "war" in captions[idx] or "battle" in captions[idx] or "bunker" in captions[idx]:
+                    if any("war" in captions[idx].lower() for word in ("war", "battle", "bunker")):
                         raise Exception("war-related content")
                     ydl.download([url])
                 except Exception as e:
                     if len(non_sample_idx) > 0:
-                        sample_idx.append(non_sample_idx[0])
-                        non_sample_idx = non_sample_idx[1:]
+                        sample_idx.append(non_sample_idx.pop(0))
                     print(f"Error downloading {url}: {e}")
-                    sample_idx = sample_idx[1:]
                     continue
         else:
             directory = AUDIO_DIR
 
         final_audios.append({"path": f"{directory}/{yt_ids[idx]}.wav", "caption": captions[idx]})
-        sample_idx = sample_idx[1:]
 
     print("final_audios", final_audios)
     return final_audios
@@ -87,7 +83,8 @@ mood = st.text_input(
 
 if "sounds" not in st.session_state:
     st.session_state.sounds = []
-    st.session_state.dir = tempfile.mkdtemp()
+    st.session_state.dir = tempfile.mkdtemp()\
+    print("temp dir", st.session_state.dir)
 
 if st.button("generate soundscapes"):
     st.session_state.sounds = []
