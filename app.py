@@ -29,11 +29,11 @@ CHROMA_CONFIG = {
     "path": "audio/chroma_db",
 }
 
+conn = st.connection("chromadb", type=ChromadbConnection, **CHROMA_CONFIG)
 
 AUDIO_DIR = "audio"
 
 def fetch_audio_from_text(prompt, filename="output.wav"):
-    conn = st.connection("chromadb", type=ChromadbConnection, **CHROMA_CONFIG)
     collection_name = "audio-collection"
     results = conn.query(collection_name=collection_name, query=prompt, num_results_limit=20)
 
@@ -70,7 +70,6 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
 
         final_audios.append({"path": f"{directory}/{yt_ids[idx]}.wav", "caption": captions[idx], "title": metadatas[idx]["title"]})
 
-    print("final_audios", final_audios)
     return final_audios
 
 st.set_page_config(page_title="🧘‍♀️ meditation mood maker", page_icon=":musical_note:")
@@ -87,7 +86,6 @@ mood = st.text_input(
 if "sounds" not in st.session_state:
     st.session_state.sounds = []
     st.session_state.dir = tempfile.mkdtemp()
-    print("temp dir", st.session_state.dir)
 
 if st.button("generate soundscapes"):
     st.session_state.sounds = []
@@ -115,6 +113,7 @@ if len(st.session_state.sounds) > 0:
             for sound in selected_sounds:
                 audio = AudioSegment.from_wav(sound["path"])
                 audio -= 10  # Lower volume so multiple layers aren't too loud
+                audio = audio.set_channels(1)
                 base = base.overlay(audio)
 
             # Save mixed audio to temp file
