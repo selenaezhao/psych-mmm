@@ -39,6 +39,7 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
 
     yt_ids = results["ids"][0]
     captions = results["documents"][0]
+    metadatas = results["metadatas"][0]
 
     sample_idx = np.random.choice(range(len(yt_ids)), size=5, replace=False).tolist()
     non_sample_idx = list(set(range(len(yt_ids))) - set(sample_idx))
@@ -62,10 +63,12 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
                         sample_idx.append(non_sample_idx.pop(0))
                     print(f"Error downloading {url}: {e}")
                     continue
+        elif f"{yt_ids[idx]}.wav" in os.listdir(st.session_state.dir):
+            directory = st.session_state.dir
         else:
             directory = AUDIO_DIR
 
-        final_audios.append({"path": f"{directory}/{yt_ids[idx]}.wav", "caption": captions[idx]})
+        final_audios.append({"path": f"{directory}/{yt_ids[idx]}.wav", "caption": captions[idx], "title": metadatas[idx]["title"]})
 
     print("final_audios", final_audios)
     return final_audios
