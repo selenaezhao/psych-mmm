@@ -29,9 +29,20 @@ CHROMA_CONFIG = {
     "path": "audio/chroma_db",
 }
 
-conn = st.connection("chromadb", type=ChromadbConnection, **CHROMA_CONFIG)
-
 AUDIO_DIR = "audio"
+
+st.set_page_config(page_title="🧘‍♀️ meditation mood maker", page_icon=":musical_note:")
+st.title("🧘‍♀️ meditation mood maker")
+
+st.write("this app generates meditative soundscapes based on your mood. it retrieves from a collection of ambient sounds and allows you to create a custom mix. if you like any sounds, you can download them and put them in your own playlists for you to enjoy during mindfulness sessions.")
+st.write("this was inspired by Inez Insuelo's lecture on using sound vibrations for meditation.")
+
+mood = st.text_input(
+    "what kind of meditative atmosphere do you want to create? use descriptive language:",
+    "calm, exploratory, fireside relaxation"
+)
+
+conn = st.connection("chromadb", type=ChromadbConnection, **CHROMA_CONFIG)
 
 def fetch_audio_from_text(prompt, filename="output.wav"):
     collection_name = "audio-collection"
@@ -71,17 +82,6 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
         final_audios.append({"path": f"{directory}/{yt_ids[idx]}.wav", "caption": captions[idx], "title": metadatas[idx]["title"]})
 
     return final_audios
-
-st.set_page_config(page_title="🧘‍♀️ meditation mood maker", page_icon=":musical_note:")
-st.title("🧘‍♀️ meditation mood maker")
-
-st.write("this app generates meditative soundscapes based on your mood. it retrieves from a collection of ambient sounds and allows you to create a custom mix. if you like any sounds, you can download them and put them in your own playlists for you to enjoy during mindfulness sessions.")
-st.write("this was inspired by Inez Insuelo's lecture on using sound vibrations for meditation.")
-
-mood = st.text_input(
-    "what kind of meditative atmosphere do you want to create? use descriptive language:",
-    "calm, exploratory, fireside relaxation"
-)
 
 if "sounds" not in st.session_state:
     st.session_state.sounds = []
