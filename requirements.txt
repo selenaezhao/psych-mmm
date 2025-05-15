@@ -6,3 +6,4 @@ scipy
 chromadb
 tqdm
 protobuf==5.29.4
+sqlite3>=3.35.0
