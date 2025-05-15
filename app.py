@@ -14,7 +14,7 @@ from streamlit_chromadb_connection.chromadb_connection import ChromadbConnection
 
 YDL_OPTS = {
     'format': 'bestaudio/best',
-    'outtmpl': 'audio/%(id)s.%(ext)s',
+    # 'outtmpl': 'audio/%(id)s.%(ext)s',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'wav',
@@ -24,17 +24,17 @@ YDL_OPTS = {
     "force_keyframes_at_cuts": True,
 }
 
-configuration = {
+CHROMA_CONFIG = {
     "client": "PersistentClient",
     "path": "audio/chroma_db",
 }
 
-collection_name = "audio-collection"
 
 AUDIO_DIR = "audio"
 
 def fetch_audio_from_text(prompt, filename="output.wav"):
-    conn = st.connection("chromadb", type=ChromadbConnection, **configuration)
+    conn = st.connection("chromadb", type=ChromadbConnection, **CHROMA_CONFIG)
+    collection_name = "audio-collection"
     results = conn.query(collection_name=collection_name, query=prompt, num_results_limit=20)
 
     yt_ids = results["ids"][0]
@@ -42,16 +42,18 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
 
     sample_idx = np.random.choice(range(len(yt_ids)), size=5, replace=False).tolist()
     non_sample_idx = list(set(range(len(yt_ids))) - set(sample_idx))
-    final_idx = []
+    final_audios = []
 
-    existing_files = os.listdir(AUDIO_DIR)
+    existing_files = os.listdir(AUDIO_DIR) + os.listdir(st.session_state.dir)
+    print(existing_files)
 
     while len(sample_idx) > 0:
         idx = sample_idx[0]
 
         if f"{yt_ids[idx]}.wav" not in existing_files:
+            directory = st.session_state.dir
             url = f"https://www.youtube.com/watch?v={yt_ids[idx]}"
-            with yt_dlp.YoutubeDL(YDL_OPTS) as ydl:
+            with yt_dlp.YoutubeDL({'outtmpl': str(directory) + '/%(id)s.%(ext)s', **YDL_OPTS }) as ydl:
                 try:
                     if "war" in captions[idx] or "battle" in captions[idx] or "bunker" in captions[idx]:
                         raise Exception("war-related content")
@@ -61,12 +63,16 @@ def fetch_audio_from_text(prompt, filename="output.wav"):
                         sample_idx.append(non_sample_idx[0])
                         non_sample_idx = non_sample_idx[1:]
                     print(f"Error downloading {url}: {e}")
+                    sample_idx = sample_idx[1:]
+                    continue
+        else:
+            directory = AUDIO_DIR
 
-
-        final_idx.append(idx)
+        final_audios.append({"path": f"{directory}/{yt_ids[idx]}.wav", "caption": captions[idx]})
         sample_idx = sample_idx[1:]
 
-    return [{"id": yt_ids[idx], "caption": captions[idx]} for idx in final_idx]
+    print("final_audios", final_audios)
+    return final_audios
 
 st.set_page_config(page_title="🧘‍♀️ meditation mood maker", page_icon=":musical_note:")
 st.title("🧘‍♀️ meditation mood maker")
@@ -81,6 +87,7 @@ mood = st.text_input(
 
 if "sounds" not in st.session_state:
     st.session_state.sounds = []
+    st.session_state.dir = tempfile.mkdtemp()
 
 if st.button("generate soundscapes"):
     st.session_state.sounds = []
@@ -97,8 +104,7 @@ if len(st.session_state.sounds) > 0:
         with col1:
             selected = st.checkbox(sound["caption"], key=f"chk_{i}")
         with col2:
-            audio_path = os.path.join(AUDIO_DIR, f"{sound['id']}.wav")
-            st.audio(audio_path, format="audio/wav")
+            st.audio(sound["path"], format="audio/wav")
         if selected:
             selected_sounds.append(sound)            
 
@@ -107,7 +113,7 @@ if len(st.session_state.sounds) > 0:
             base = AudioSegment.silent(duration=60000)  # 1 minute of silence
 
             for sound in selected_sounds:
-                audio = AudioSegment.from_wav(os.path.join(AUDIO_DIR, f"{sound['id']}.wav"))
+                audio = AudioSegment.from_wav(sound["path"])
                 audio -= 10  # Lower volume so multiple layers aren't too loud
                 base = base.overlay(audio)
 
